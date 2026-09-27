@@ -8,6 +8,10 @@ from django.contrib import messages
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from .models import Mailing, Recipient
 from .services import send_mailing_manually
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.core.cache import cache
+from django.core.exceptions import PermissionDenied
 
 
 # 1. Список всех рассылок
@@ -40,11 +44,16 @@ class MailingDetailView(LoginRequiredMixin, DetailView):
 class MailingCreateView(LoginRequiredMixin, CreateView):
     model = Mailing
     form_class = MailingForm
-    template_name = 'mailing/mailing_form.html'
-    success_url = reverse_lazy('mailing:list')
+    template_name = "mailing/mailing_form.html"
+
+    def get_form_kwargs(self):
+        """Передаем текущего авторизованного пользователя в форму"""
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
     def form_valid(self, form):
-        """Автоматически назначаем текущего пользователя владельцем рассылки"""
+        """Автоматически назначаем текущего пользователя владельцем создаваемой рассылки"""
         form.instance.owner = self.request.user
         return super().form_valid(form)
 
@@ -54,6 +63,12 @@ class MailingUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Mailing
     form_class = MailingForm
     template_name = 'mailing/mailing_form.html'
+
+    def get_form_kwargs(self):
+        """Передаем текущего пользователя в форму при редактировании"""
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
     def get_success_url(self):
         return reverse('mailing:detail', kwargs={'pk': self.object.pk})
@@ -77,31 +92,46 @@ class MailingDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 
 # 6. Кнопка ручного запуска рассылки из интерфейса (Экшен)
+@login_required
+@require_POST
 def trigger_mailing_view(request, pk):
-    """Специальный контроллер-функция для ручного запуска отправки писем"""
+    """Специальный контроллер функции для ручного запуска отправки писем"""
     mailing = get_object_or_404(Mailing, pk=pk)
+
+    # Защита: только владелец или суперпользователь может дёрнуть триггер
+    if mailing.owner != request.user and not request.user.is_superuser:
+        raise PermissionDenied("Вы не имеете прав для запуска этой рассылки.")
+
     try:
         send_mailing_manually(mailing)
         messages.success(request, "Рассылка успешно выполнена! Логи записаны в базу.")
     except ValueError as e:
-        # Если время рассылки еще не пришло или уже прошло, выведется ошибка
         messages.error(request, str(e))
 
     return redirect('mailing:detail', pk=pk)
 
 
 class IndexView(TemplateView):
-    """Контроллер главной страницы со статистикой"""
+    """Контроллер главной страницы по статистике"""
     template_name = 'mailing/index.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Подсчитываем данные по всей системе
-        context['total_mailings'] = Mailing.objects.count()
-        context['active_mailings'] = Mailing.objects.filter(status='Запущена', is_active=True).count()
+        # Ключ, по которому будем сохранять и искать кэш
+        cache_key = 'index_stats'
+        stats = cache.get(cache_key)
 
-        # Считаем количество уникальных email-адресов клиентов
-        context['unique_recipients'] = Recipient.objects.values('email').distinct().count()
+        # Если кэша нет в системе — считаем его тяжелыми запросами к БД
+        if stats is None:
+            stats = {
+                'total_mailings': Mailing.objects.count(),
+                'active_mailings': Mailing.objects.filter(status='Запущена', is_active=True).count(),
+                'unique_recipients': Recipient.objects.values('email').distinct().count()
+            }
+            # Сохраняем в кэш на 60 секунд
+            cache.set(cache_key, stats, 60)
 
+        # Обновляем контекст страницы закешированными данными
+        context.update(stats)
         return context

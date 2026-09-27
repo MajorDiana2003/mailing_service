@@ -46,6 +46,18 @@ class Mailing(models.Model):
         ('Запущена', 'Запущен'),
         ('Завершена', 'Завершена'),
     ]
+    PERIODS = [
+        ('daily', 'Раз в день'),
+        ('weekly', 'Раз в неделю'),
+        ('monthly', 'Раз в месяц'),
+    ]
+    periodic = models.CharField(
+        max_length=20,
+        choices=PERIODS,
+        default='daily',
+        verbose_name="Периодичность рассылки"
+    )
+
 
     start_time = models.DateTimeField(verbose_name="Дата и время начала отправки")
     end_time = models.DateTimeField(verbose_name="Дата и время окончания отправки")

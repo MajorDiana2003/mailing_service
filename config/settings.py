@@ -14,7 +14,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+
 
 
 # Application definition
@@ -113,30 +114,22 @@ STATIC_URL = 'static/'
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
 
 AUTH_USER_MODEL = 'users.User'
 
 # Настраиваем отправку писем прямо в консоль PyCharm
-EMAIL_CONFIG = {
-    'EMAIL_BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    'EMAIL_HOST_USER': 'test@example.com',
-}
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.yandex.ru')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 465))
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-# Указываем форматы, которые Django будет понимать при вводе дат в формах
-DATETIME_INPUT_FORMATS = [
-    '%d.%m.%Y %H:%M:%S',
-    '%d.%m.%Y %H:%M',
-    '%d.%m.%Y',
-    '%Y-%m-%d %H:%M:%S',
-    '%Y-%m-%d %H:%M',
-]
 
 LOGIN_URL = 'users:login'
+LOGIN_REDIRECT_URL = 'mailing:list'
+
 
 # Настройка кэширования в оперативной памяти для локальной разработки
 CACHES = {

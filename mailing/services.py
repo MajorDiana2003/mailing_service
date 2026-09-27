@@ -23,11 +23,11 @@ def send_mailing_manually(mailing):
         try:
             # Встроенная функция Django для отправки почты
             send_mail(
-                subject=mailing.message.subject,
-                message=mailing.message.body,
+                subject=...,
+                message=...,
                 from_email=settings.EMAIL_HOST_USER,
                 recipient_list=[recipient.email],
-                fail_silently=False,  # Если будет ошибка — мы её поймаем в except
+                fail_silently=False
             )
             # Если письмо ушло успешно, готовим запись для лога
             attempts_to_create.append(
