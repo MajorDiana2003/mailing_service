@@ -1,0 +1,86 @@
+{% extends 'mailing/base.html' %}
+
+{% block title %}Рассылка #{{ object.id }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'mailing:list' %}" class="btn btn-secondary btn-sm">⬅️ Назад к списку</a>
+</div>
+
+<div class="row">
+    <!-- Левая колонка: Информация о рассылке -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Параметры рассылки #{{ object.id }}</h5>
+                <!-- Кнопка ручного триггера из ТЗ -->
+                <a href="{% url 'mailing:trigger' object.id %}" class="btn btn-light btn-sm font-weight-bold text-dark">🚀 Запустить вручную</a>
+            </div>
+            <div class="card-body">
+                <p><strong>Статус:</strong> {{ object.status }}</p>
+                <p><strong>Время работы:</strong> с {{ object.start_time|date:"H:i d.m.Y" }} по {{ object.end_time|date:"H:i d.m.Y" }}</p>
+                <p><strong>Активность (для менеджера):</strong> {% if object.is_active %}Да{% else %}Нет{% endif %}</p>
+                <hr>
+                <h5>Сообщение:</h5>
+                <p><strong>Тема:</strong> {{ object.message.subject }}</p>
+                <p><strong>Текст:</strong> {{ object.message.body }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Правая колонка: Список получателей -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">Получатели писем</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for recipient in object.recipients.all %}
+                        <li class="list-group-item">👤 {{ recipient.name }} <span class="text-muted">({{ recipient.email }})</span></li>
+                    {% empty %}
+                        <li class="list-group-item text-muted">Получатели не выбраны.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Нижний блок: Логи отправки писем (MailingAttempt) -->
+<div class="card shadow-sm mt-4 mb-5">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">История попыток отправки (Логи из базы данных)</h5>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>Время попытки</th>
+                    <th>Статус</th>
+                    <th>Ответ почтового сервера</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attempt in object.mailingattempt_set.all %}
+                <tr>
+                    <td>{{ attempt.attempt_time|date:"d.m.Y H:i:s" }}</td>
+                    <td>
+                        {% if attempt.status == 'Успешно' %}
+                            <span class="badge bg-success">Успешно</span>
+                        {% else %}
+                            <span class="badge bg-danger">Сбой</span>
+                        {% endif %}
+                    </td>
+                    <td class="small text-muted">{{ attempt.server_response }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center py-3 text-muted">Эту рассылку ещё ни разу не запускали.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

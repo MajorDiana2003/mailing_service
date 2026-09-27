@@ -1,5 +1,22 @@
-.idea/
+# Секретные файлы окружения
+.env
+
+# Виртуальное окружение
 .venv/
 venv/
-__pycache__/
-.env
+env/
+
+# Локальная база данных
+*.sqlite3
+
+# Кэш Python
+**/__pycache__/
+*.pyc
+
+# Настройки PyCharm
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

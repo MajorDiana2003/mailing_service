@@ -1,0 +1,16 @@
+{% extends 'mailing/base.html' %}
+
+{% block title %}Подтверждение регистрации{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 50px auto; text-align: center;" class="card">
+    <div style="padding: 40px;">
+        <h2 style="color: #198754; margin-bottom: 20px;">📧 Письмо отправлено!</h2>
+        <p class="lead">На ваш Email выслана ссылка для подтверждения учётной записи.</p>
+        <p class="text-muted">Пожалуйста, проверьте ваш почтовый ящик (и папку "Спам", если письма долго нет) и перейдите по ссылке для активации аккаунта.</p>
+        <div style="margin-top: 30px;">
+            <a href="{% url 'users:login' %}" class="btn btn-primary">Перейти ко входу</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
