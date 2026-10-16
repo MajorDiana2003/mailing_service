@@ -1,0 +1,46 @@
+{% extends 'mailing/base.html' %}
+
+{% block title %}Редактирование рассылки{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Настройка параметров рассылки</h4>
+            </div>
+            <div class="card-body">
+                <!-- Форма отправляет данные на сервер -->
+                <form method="post" novalidate>
+                    {% csrf_token %} <!-- Защита от хакеров, обязательна в Django -->
+
+                    <!-- Выводим поля формы в красивом стиле Bootstrap -->
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ field.errors|striptags }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-success">Сохранить</button>
+                        <a href="{% url 'mailing:list' %}" class="btn btn-secondary">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Скрипт, который автоматически делает поля ввода красивыми кнопками Bootstrap -->
+<script>
+    document.querySelectorAll('input, select, textarea').forEach(function(el) {
+        el.classList.add('form-control');
+    });
+</script>
+{% endblock %}

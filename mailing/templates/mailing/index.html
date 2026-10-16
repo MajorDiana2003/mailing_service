@@ -1,0 +1,45 @@
+{% extends 'mailing/base.html' %}
+{% load cache %} <!-- Загружаем инструменты кэширования Django -->
+
+{% block title %}Главная страница{% endblock %}
+
+{% block content %}
+<div style="text-align: center; margin-bottom: 40px; padding: 30px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <h1 style="margin-0; color: #212529;">Добро пожаловать в Сервис Управления Рассылками! ✉️</h1>
+    <p style="color: #6c757d; margin-top: 10px; font-size: 1.1rem;">Профессиональный инструмент для автоматизации отправки email-сообщений вашим клиентам.</p>
+    {% if not user.is_authenticated %}
+        <div style="margin-top: 20px;">
+            <a href="{% url 'users:login' %}" class="btn btn-primary" style="padding: 10px 20px; font-weight: 600;">Начать работу</a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- КЭШИРОВАНИЕ: Обертываем блок статистики. Он закешируется на 60 секунд под ключом 'index_stats' -->
+
+<div style="display: flex; gap: 20px; margin-bottom: 40px;">
+
+    <!-- Карточка 1: Всего рассылок -->
+    <div class="card" style="flex: 1; padding: 25px; text-align: center; border-left: 5px solid #0d6efd;">
+        <div style="font-size: 2.5rem; font-weight: bold; color: #0d6efd; margin-bottom: 5px;">{{ total_mailings }}</div>
+        <div style="text-transform: uppercase; font-size: 0.85rem; font-weight: 600; color: #6c757d;">Всего рассылок в системе</div>
+    </div>
+
+    <!-- Карточка 2: Активные рассылки -->
+    <div class="card" style="flex: 1; padding: 25px; text-align: center; border-left: 5px solid #198754;">
+        <div style="font-size: 2.5rem; font-weight: bold; color: #198754; margin-bottom: 5px;">{{ active_mailings }}</div>
+        <div style="text-transform: uppercase; font-size: 0.85rem; font-weight: 600; color: #6c757d;">Активные рассылки (Запущены)</div>
+    </div>
+
+    <!-- Карточка 3: Уникальные клиенты -->
+    <div class="card" style="flex: 1; padding: 25px; text-align: center; border-left: 5px solid #0dcaf0;">
+        <div style="font-size: 2.5rem; font-weight: bold; color: #0dcaf0; margin-bottom: 5px;">{{ unique_recipients }}</div>
+        <div style="text-transform: uppercase; font-size: 0.85rem; font-weight: 600; color: #6c757d;">Уникальные получатели</div>
+    </div>
+
+</div>
+
+
+<div style="text-align: center;">
+    <a href="{% url 'mailing:list' %}" class="btn btn-primary" style="background-color: #212529; border-color: #212529; padding: 12px 30px; font-weight: 600;">📊 Перейти к управлению рассылками</a>
+</div>
+{% endblock %}

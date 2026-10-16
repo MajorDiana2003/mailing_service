@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Сервис рассылок{% endblock %}</title>
+    <!-- Встроенные стили, которые заменят внешний Bootstrap и будут работать БЕЗ интернета -->
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; background-color: #f8f9fa; color: #212529; margin: 0; padding-0; }
+        .navbar { background-color: #212529; padding: 1rem 0; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .navbar-brand { color: #fff; font-weight: bold; text-decoration: none; font-size: 1.25rem; }
+        .nav-link { color: rgba(255,255,255,0.75); text-decoration: none; margin-left: 15px; }
+        .nav-link:hover { color: #fff; }
+        .container { max-width: 1140px; margin: 30px auto; padding: 0 15px; }
+        .d-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .card { background: #fff; border: 1px solid rgba(0,0,0,0.125); border-radius: 0.375rem; box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); overflow: hidden; }
+        .card-body { padding: 0; }
+        .table { width: 100%; border-collapse: collapse; margin-bottom: 0; background-color: #fff; }
+        .table th { background-color: #212529; color: #fff; text-align: left; padding: 12px; font-weight: 600; }
+        .table td { padding: 12px; border-top: 1px solid #dee2e6; }
+        .table-hover tbody tr:hover { background-color: rgba(0,0,0,0.075); }
+        .btn { display: inline-block; font-weight: 400; text-align: center; vertical-align: middle; cursor: pointer; border: 1px solid transparent; padding: 0.375rem 0.75rem; font-size: 1rem; border-radius: 0.25rem; text-decoration: none; transition: all 0.15s; }
+        .btn-primary { background-color: #0d6efd; color: #fff; }
+        .btn-primary:hover { background-color: #0b5ed7; }
+        .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.875rem; border-radius: 0.2rem; margin-right: 5px; }
+        .btn-info { background-color: #0dcaf0; color: #fff; }
+        .btn-warning { background-color: #ffc107; color: #212529; }
+        .btn-danger { background-color: #dc3545; color: #fff; }
+        .badge { display: inline-block; padding: 0.35em 0.65em; font-size: .75em; font-weight: 700; line-height: 1; text-align: center; white-space: nowrap; vertical-align: baseline; border-radius: 0.25rem; }
+        .bg-secondary { background-color: #6c757d; color: #fff; }
+        .bg-success { background-color: #198754; color: #fff; }
+        .text-center { text-align: center; }
+        .py-4 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+        .text-muted { color: #6c757d; }
+    </style>
+</head>
+<body>
+
+        <!-- Шапка сайта -->
+    <div class="navbar">
+        <div style="max-width: 1140px; margin: 0 auto; width: 100%; padding: 0 15px; display: flex; justify-content: space-between; align-items: center;">
+            <a class="navbar-brand" href="{% url 'mailing:list' %}">✉️ Сервис рассылок</a>
+            <div style="display: flex; align-items: center;">
+                <a class="nav-link" href="{% url 'mailing:list' %}" style="margin-right: 20px;">Рассылки</a>
+
+                <!-- Проверка: залогинен ли пользователь? -->
+                {% if user.is_authenticated %}
+                    <span style="color: rgba(255,255,255,0.8); margin-right: 15px; font-size: 0.9rem;">👤 {{ user.email }}</span>
+                   <!-- Вместо обычной ссылки делаем форму для отправки POST-запроса, как требует Django 5 -->
+                <form method="post" action="{% url 'users:logout' %}" style="display: inline; margin: 0;">
+                    {% csrf_token %}
+                    <button type="submit" class="nav-link" style="background-color: #dc3545; padding: 5px 10px; border-radius: 4px; color: #fff; border: none; font-size: 0.9rem; cursor: pointer;">Выйти</button>
+                </form>
+                {% else %}
+                    <a class="nav-link" href="{% url 'users:login' %}">Войти</a>
+                    <a class="nav-link" href="{% url 'users:register' %}" style="background-color: #0d6efd; padding: 5px 10px; border-radius: 4px; color: #fff; margin-left: 10px;">Регистрация</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Основной контент страницы -->
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+</body>
+</html>
+
+
